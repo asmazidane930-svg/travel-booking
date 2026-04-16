@@ -1,4 +1,6 @@
+# ==============================
 # Class User
+# ==============================
 class User:
     def __init__(self, id_user, name, email, password):
         self.id_user = id_user
@@ -6,19 +8,46 @@ class User:
         self.email = email
         self.password = password
 
+    def __str__(self):
+        return f"{self.name} ({self.email})"
 
+
+# ==============================
 # Class Trip
+# ==============================
 class Trip:
     def __init__(self, id_trip, departure, destination, date, price, seats):
         self.id_trip = id_trip
         self.departure = departure
         self.destination = destination
         self.date = date
-        self.price = price
-        self.seats = seats
+        self._price = price     # Encapsulation
+        self._seats = seats     # Encapsulation
+
+    # Getter price
+    @property
+    def price(self):
+        return self._price
+
+    # Getter seats
+    @property
+    def seats(self):
+        return self._seats
+
+    def book_seat(self):
+        if self._seats > 0:
+            self._seats -= 1
+            return True
+        return False
+
+    def __str__(self):
+        return (f"ID: {self.id_trip} | {self.departure} -> {self.destination} | "
+                f"Date: {self.date} | Price: {self.price} | Seats: {self.seats}")
 
 
+# ==============================
 # Class Booking
+# ==============================
 class Booking:
     def __init__(self, id_booking, user, trip, seat_number):
         self.id_booking = id_booking
@@ -26,37 +55,22 @@ class Booking:
         self.trip = trip
         self.seat_number = seat_number
 
+    def __str__(self):
+        return (f"Booking {self.id_booking} | {self.user.name} | "
+                f"{self.trip.departure}->{self.trip.destination} | Seat: {self.seat_number}")
 
-# Lists to store data
+
+# ==============================
+# Data Storage
+# ==============================
 users = []
 trips = []
 bookings = []
 
 
-# Add Trip
-def add_trip():
-    id_trip = input("Trip ID: ")
-    departure = input("Departure: ")
-    destination = input("Destination: ")
-    date = input("Date: ")
-    price = input("Price: ")
-    seats = input("Seats: ")
-
-    trip = Trip(id_trip, departure, destination, date, price, seats)
-    trips.append(trip)
-    print("Trip added successfully")
-
-
-# Show Trips
-def show_trips():
-    for trip in trips:
-        print("ID:", trip.id_trip,
-              "|", trip.departure, "->", trip.destination,
-              "| Date:", trip.date,
-              "| Price:", trip.price)
-
-
+# ==============================
 # Add User
+# ==============================
 def add_user():
     id_user = input("User ID: ")
     name = input("Name: ")
@@ -66,46 +80,106 @@ def add_user():
     user = User(id_user, name, email, password)
     users.append(user)
 
-    print("User added")
+    print("✅ User added successfully")
 
 
-# Booking Trip
-def book_trip():
-    user_id = input("Enter user id: ")
-    trip_id = input("Enter trip id: ")
-    seat = input("Seat number: ")
+# ==============================
+# Add Trip
+# ==============================
+def add_trip():
+    id_trip = input("Trip ID: ")
+    departure = input("Departure: ")
+    destination = input("Destination: ")
+    date = input("Date: ")
 
-    user = None
-    trip = None
+    price = float(input("Price: "))   # ✅ تعديل
+    seats = int(input("Seats: "))     # ✅ تعديل
 
+    trip = Trip(id_trip, departure, destination, date, price, seats)
+    trips.append(trip)
+
+    print("✅ Trip added successfully")
+
+
+# ==============================
+# Show Trips
+# ==============================
+def show_trips():
+    if not trips:
+        print("❌ No trips available")
+        return
+
+    print("\n📍 Available Trips:")
+    for trip in trips:
+        print(trip)
+
+
+# ==============================
+# Search User
+# ==============================
+def find_user(user_id):
     for u in users:
         if u.id_user == user_id:
-            user = u
+            return u
+    return None
 
+
+# ==============================
+# Search Trip
+# ==============================
+def find_trip(trip_id):
     for t in trips:
         if t.id_trip == trip_id:
-            trip = t
+            return t
+    return None
 
-    if user and trip:
+
+# ==============================
+# Book Trip
+# ==============================
+def book_trip():
+    user_id = input("Enter user ID: ")
+    trip_id = input("Enter trip ID: ")
+    seat = input("Seat number: ")
+
+    user = find_user(user_id)
+    trip = find_trip(trip_id)
+
+    if not user:
+        print("❌ User not found")
+        return
+
+    if not trip:
+        print("❌ Trip not found")
+        return
+
+    if trip.book_seat():
         booking = Booking(len(bookings)+1, user, trip, seat)
         bookings.append(booking)
-        print("Booking successful")
+        print("✅ Booking successful")
+        print(booking)
     else:
-        print("User or Trip not found")
+        print("❌ No seats available")
 
 
+# ==============================
 # Show Bookings
+# ==============================
 def show_bookings():
+    if not bookings:
+        print("❌ No bookings yet")
+        return
+
+    print("\n📖 Bookings:")
     for b in bookings:
-        print("Booking ID:", b.id_booking,
-              "| User:", b.user.name,
-              "| Trip:", b.trip.departure, "->", b.trip.destination,
-              "| Seat:", b.seat_number)
+        print(b)
 
 
+# ==============================
 # Main Menu
+# ==============================
 while True:
-    print("\n--- Travel Booking System ---")
+    print("\n===== Travel Booking System =====")
     print("1. Add User")
     print("2. Add Trip")
     print("3. Show Trips")
@@ -131,8 +205,8 @@ while True:
         show_bookings()
 
     elif choice == "6":
-        print("Goodbye")
+        print("👋 Goodbye")
         break
 
     else:
-        print("Invalid choice")
+        print("❌ Invalid choice")
